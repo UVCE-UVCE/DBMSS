@@ -1,0 +1,138 @@
+
+create table student(
+usn int(11) primary key,
+sname varchar(20) ,
+address varchar(30),
+phone int(10),
+gender varchar(10)
+);
+
+create table semsec(
+ssid int(4) primary key,
+sem int(4),
+sec varchar(10)
+);
+
+create table class(
+usn int(11),
+ssid int(4),
+primary key(usn,ssid),
+foreign key(usn) references student(usn) on delete cascade,
+foreign key(ssid) references semsec(ssid) on delete cascade
+);
+
+create table subject(
+subcode int(4) primary key,
+title varchar(20),
+sem int(4),
+credits int(4)
+);
+
+create table ia_marks(
+usn int(11),
+subcode int(4),
+ssid int(4),
+test1 int(4),
+test2 int(4),
+test3 int(4),
+finalia int,
+primary key(usn,subcode,ssid),
+foreign key(usn) references student(usn) on delete cascade,
+foreign key(ssid) references semsec(ssid) on delete cascade,
+foreign key(subcode) references subject(subcode) on delete cascade
+);
+
+
+
+
+INSERT INTO student (usn, sname, address, phone, gender) VALUES
+(101, 'Alice Johnson', '123 Elm Street', 9876543210, 'Female'),
+(102, 'Bob Smith', '456 Oak Avenue', 9123456789, 'Male'),
+(103, 'Carol White', '789 Pine Road', 9234567890, 'Female'),
+(104, 'David Brown', '101 Maple Street', 9345678901, 'Male'),
+(105, 'Eve Davis', '202 Birch Lane', 9456789012, 'Female'),
+(106, 'Frank Harris', '303 Cedar Court', 9567890123, 'Male');
+
+INSERT INTO semsec (ssid, sem, sec) VALUES
+(1, 1, 'A'),
+(2, 1, 'B'),
+(3, 2, 'A'),
+(4, 2, 'B'),
+(5, 3, 'A'),
+(6, 3, 'B');
+
+INSERT INTO class (usn, ssid) VALUES
+(101, 1),
+(101, 3),
+(102, 2),
+(102, 4),
+(103, 1),
+(103, 5),
+(104, 2),
+(104, 6),
+(105, 3),
+(105, 5),
+(106, 4),
+(106, 6);
+
+INSERT INTO subject (subcode, title, sem, credits) VALUES
+(201, 'Mathematics', 1, 4),
+(202, 'Physics', 1, 3),
+(203, 'Chemistry', 2, 4),
+(204, 'Biology', 2, 3),
+(205, 'Computer Science', 3, 4),
+(206, 'Electronics', 3, 3);
+
+INSERT INTO ia_marks (usn, subcode, ssid, test1, test2, test3) VALUES
+(101, 201, 1, 85, 90, 88),
+(101, 203, 3, 78, 82, 80),
+(102, 202, 2, 92, 89, 95),
+(102, 204, 4, 80, 85, 83),
+(103, 201, 1, 75, 80, 70),
+(103, 205, 5, 88, 90, 85),
+(104, 202, 2, 70, 75, 80),
+(104, 204, 6, 90, 92, 94),
+(105, 203, 3, 82, 85, 88),
+(105, 205, 5, 90, 93, 89),
+(106, 204, 6, 75, 78, 80),
+(106, 206, 6, 88, 90, 85);
+
+
+
+select s.*,ss.sem,ss.sec from student s
+join class c on c.usn=s.usn
+join semsec ss on ss.ssid=c.ssid
+where ss.sem=3 and sec='A';
+
+
+select ss.sem,ss.sec,s.gender,count(s.gender) as count 
+from student s, semsec ss, class c
+where s.usn=c.usn
+and ss.ssid=c.ssid
+group by ss.sem,ss.sec,s.gender
+order by sem;
+
+
+create view test1_marks as
+select subcode,test1 from ia_marks where usn=101;
+
+select * from test1_marks;
+
+
+update iamarks set finalia =(greatest(test1+test2,test2+test3,test3+test1))/2;
+
+
+
+
+
+SELECT s.*,
+    CASE
+        WHEN ia.finalIA BETWEEN 87 AND 100 THEN 'Outstanding'
+        WHEN ia.finalIA BETWEEN 52 AND 86 THEN 'Average'
+        ELSE 'Weak'
+    END AS category
+FROM student s,semsec ss,ia_marks ia,subject sub
+where s.usn=ia.usn and
+ss.ssid=ia.ssid and
+sub.subcode=ia.subcode and
+sub.sem=3;

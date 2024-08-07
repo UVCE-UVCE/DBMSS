@@ -1,0 +1,156 @@
+create table department(
+dno int primary key,
+dname varchar(20),
+mgrssn int,
+mgrstartdate date
+);
+
+create table employee(
+ssn int primary key,
+name varchar(20),
+address varchar(20),
+sex varchar(1),
+salary int,
+superssn int references employee(ssn),
+dno int references department(dno) on delete cascade
+);
+alter table department add foreign key(mgrssn) references employee (ssn);
+
+
+create table dlocation(
+dno int ,
+dloc varchar(20) primary key,
+foreign key(dno) references department(dno) on delete cascade
+);
+
+create table project(
+pno int primary key,
+pname varchar(20),
+plocation varchar(20),
+dno int references department(dno) on delete cascade
+);
+
+create table works_on(
+ssn int,
+pno int,
+hours int,
+primary key(ssn,pno,hours),
+foreign key (ssn) references employee(ssn),
+foreign key (pno) references project(pno)
+);
+
+
+
+
+
+
+INSERT INTO employee (ssn, name, address, sex, salary, dno) VALUES 
+(110, 'Rahul', 'Mumbai', 'M', 500000, 10),
+(111, 'Anita', 'Delhi', 'F', 420000, 11),
+(112, 'Hemanth', 'Hyderabad', 'M', 550000, 12),
+(113, 'Sanya', 'Chennai', 'F', 280000, 13),
+(114, 'Amit', 'Pune', 'M', 170000, 14),
+(115, 'John Doe', 'Mumbai', 'M', 65000, 10),
+(116, 'Jane Roe', 'Delhi', 'F', 70000, 10),
+(117, 'Alice Smith', 'Pune', 'F', 80000, 10),
+(118, 'Bob Brown', 'Chennai', 'M', 75000, 10),
+(119, 'Charlie White', 'Hyderabad', 'M', 90000, 10);
+
+INSERT INTO DEPARTMENT (dno,dname,mgrstartdate,mgrssn) VALUES (10, 'HR', '2021-03-01', 110); 
+INSERT INTO DEPARTMENT (dno,dname,mgrstartdate,mgrssn) VALUES (11, 'Marketing', '2019-10-01', 111); 
+INSERT INTO DEPARTMENT (dno,dname,mgrstartdate,mgrssn) VALUES (12, 'Research', '2017-07-01', 112); 
+INSERT INTO DEPARTMENT (dno,dname,mgrstartdate,mgrssn) VALUES (13, 'Operations', '2018-05-01', 113); 
+INSERT INTO DEPARTMENT (dno,dname,mgrstartdate,mgrssn) VALUES (14, 'Accounts', '2020-09-01', 114);
+UPDATE EMPLOYEE SET 
+SUPERSSN=NULL,DNO=3 
+WHERE SSN=101; 
+UPDATE EMPLOYEE SET 
+SUPERSSN=101,DNO=5 
+WHERE SSN=102; 
+UPDATE EMPLOYEE SET 
+SUPERSSN=101,DNO=4 
+WHERE SSN=103; 
+UPDATE EMPLOYEE SET 
+SUPERSSN=102,DNO=2 
+WHERE SSN=104; 
+UPDATE EMPLOYEE SET 
+SUPERSSN=101,DNO=3 
+WHERE SSN=100;
+UPDATE employee 
+SET dno = 14 
+WHERE ssn = 114; -- Assuming 'Amit' should be in 'Accounts'
+
+
+
+INSERT INTO DLOCATION VALUES(10, 'Mumbai');
+INSERT INTO DLOCATION VALUES(11, 'Pune');
+INSERT INTO DLOCATION VALUES(12, 'Kolkata');
+INSERT INTO DLOCATION VALUES(13, 'Delhi');
+INSERT INTO DLOCATION VALUES(14, 'Jaipur');
+
+
+INSERT INTO PROJECT VALUES (20, 'Machine Learning', 'Mumbai', 4); 
+INSERT INTO PROJECT VALUES (21, 'Blockchain', 'Mumbai', 3); 
+INSERT INTO PROJECT VALUES (22, 'IOT', 'Mumbai', 2); 
+INSERT INTO PROJECT VALUES (23, 'Mobile App Development', 'Mumbai', 3); 
+INSERT INTO PROJECT VALUES (24, 'E-commerce Platform', 'Mumbai', 1); 
+INSERT INTO PROJECT VALUES (25, 'Inventory Management', 'Mumbai', 5);
+
+INSERT INTO WORKS_ON VALUES (110, 20, 20); 
+INSERT INTO WORKS_ON VALUES (111, 21, 32); 
+INSERT INTO WORKS_ON VALUES (112, 22, 54); 
+INSERT INTO WORKS_ON VALUES (113, 23, 26); 
+INSERT INTO WORKS_ON VALUES (114, 24, 38); 
+
+
+
+-- Find project numbers for projects involving employees with the last name 'Scott'
+SELECT DISTINCT p.pno
+FROM PROJECT p
+JOIN WORKS_ON wo ON p.pno = wo.pno
+JOIN EMPLOYEE e ON wo.ssn = e.ssn
+WHERE e.name LIKE '%Amit%'
+
+UNION
+
+-- Find project numbers for projects managed by departments with managers with the last name 'Scott'
+SELECT DISTINCT p.pno
+FROM PROJECT p
+JOIN DEPARTMENT d ON p.dno = d.dno
+JOIN EMPLOYEE e ON d.mgrssn = e.ssn
+WHERE e.name LIKE '%Amit%';
+
+
+
+
+
+select e.name,e.salary*1.1 as Incremented_salary
+from employee e,works_on w,project p
+where e.ssn=w.ssn
+and p.pno=w.pno
+and p.pname='IOT';
+
+select sum(e.salary),max(e.salary),min(e.salary),avg(e.salary) from employee e,department d
+where e.dno=d.dno
+and d.dname='Accounts';
+
+select e.name from employee e where not exists(select pno from project where dno=10);
+
+SELECT d.dno, COUNT(e.ssn) AS num_high_earners
+FROM department d
+JOIN employee e ON d.dno = e.dno
+WHERE e.salary > 60000
+AND d.dno IN (
+    SELECT e1.dno
+    FROM employee e1
+    GROUP BY e1.dno
+    HAVING COUNT(*) >= 5
+)
+GROUP BY d.dno;
+
+
+
+
+
+
+

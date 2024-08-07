@@ -1,0 +1,106 @@
+create table actor(
+act_id int (4) primary key ,
+act_name varchar(20) ,
+act_gender varchar(10)
+);
+
+create table director(
+dir_id int(5) primary key,
+dir_name varchar(20) ,
+dir_phone int(10) 
+);
+
+create table movies(
+mov_id varchar(6) primary key,
+mov_title varchar(20),
+mov_year varchar(20),
+mov_lang varchar(10),
+dir_id int(5) references director(dir_id) on delete cascade
+);
+
+create table movie_cast(
+act_id int(4),
+mov_id varchar(6),
+role varchar(20),
+primary key(act_id,mov_id),
+foreign key(act_id) references actor(act_id) on delete cascade,
+foreign key(mov_id) references movies(mov_id) on delete cascade
+);
+
+create table rating(
+mov_id varchar(6) primary key references movies(mov_id) on delete cascade,
+rev_star int(2)
+);
+
+
+insert into actor values(1111,'Shahrukh Khan','Male');
+insert into actor values(1121,'Salman Khan','Male');
+insert into actor values(1131,'Ajay Devgn','Male');
+insert into actor values(1141,'Bobby Deol','Male');
+insert into actor values(1211,'Kareena Kapoor','Female');
+insert into actor values(1221,'Sonakshi sinha','Female');
+insert into actor values(1231,'Samantha','Female');
+
+
+insert into director values(11111,'Mohammed Nur',1234567890);
+insert into director values(11112,'Atli',678965432);
+insert into director values(11113,'Ali',098765432);
+insert into director values(11114,'Christopher nolan',9900210977);
+insert into director values(11115,'tom holland',098723454);
+
+insert into movies values('aaaaaa','Dabaang','2016','Hindi',11111);
+insert into movies values('bbbbbb','Border','2015','Hindi',11112);
+insert into movies values('cccccc','Pathan','2020','Hindi',11113);
+insert into movies values('dddddd','Singham,','2019','Hindi',11115);
+insert into movies values('eeeeee','Chak de India','2016','Hindi',11114);
+
+insert into movie_cast values(1111,'cccccc','Hero');
+insert into movie_cast values(1111,'eeeeee','Hero');
+insert into movie_cast values(1141,'bbbbbb','Hero');
+insert into movie_cast values(1211,'aaaaaa','Heroine');
+insert into movie_cast values(1231,'cccccc','Heroine');
+insert into movie_cast values(1121,'aaaaaa','Hero');
+insert into movie_cast values(1131,'dddddd','Hero');
+insert into movie_cast values(1221,'aaaaaa','Heroine');
+
+insert into rating values('aaaaaa',4);
+insert into rating values('aaaaaa',2);
+insert into rating values('bbbbbb',5);
+insert into rating values('bbbbbb',4);
+insert into rating values('cccccc',3);
+insert into rating values('dddddd',2);
+insert into rating values('eeeeee',4);
+
+
+select * from movies where dir_id=(select dir_id from director where dir_name='Atli');
+
+
+select mov_title from movies m 
+join movie_cast mc on mc.mov_id=m.mov_id
+where mc.act_id in (select act_id from movie_cast
+group by act_id
+having count(mov_id)>=2
+);
+
+
+select a.act_id,a.act_name,a.act_gender from actor a 
+join movie_cast mc on mc.act_id=a.act_id
+join movies m on m.mov_id=mc.mov_id
+where m.mov_year <'2015' or m.mov_year > '2019';
+
+
+
+select m.mov_title, max(r.rev_star) from movies m join rating r on m.mov_id=r.mov_id
+group by mov_title
+order by r.rev_star desc;
+
+
+update rating set rev_star=5 where mov_id in (
+select mov_id from movies where dir_id=(
+select dir_id from director where dir_name='tom holland'
+)
+);
+
+
+
+

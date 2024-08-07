@@ -1,0 +1,85 @@
+
+create table salesman(
+salesman_id int(4) primary key,
+name varchar(30),
+city varchar(20),
+commission varchar(10)
+);
+
+create table customer(
+customer_id int(4) primary key,
+cust_name varchar(30),
+city varchar(20),
+grade int,
+salesman_id int(4)  references salesman(salesman_id) on delete cascade
+);
+
+create table orders(
+order_no int(5) primary key,
+purchase_amt int,
+order_date date,
+customer_id int(4) references customer(customer_id) on delete cascade,
+salesman_id int(4) references salesman(salesman_id) on delete cascade
+);
+
+insert into salesman values(1111,'Mohammed Nur','Banglore','25%');
+insert into salesman values(1121,'Mohammed Yahya','Hassan','15%');
+insert into salesman values(1131,'Mohammed Ali','Udupi','5%');
+insert into salesman values(1141,'Manish','Hyderabad','2%');
+insert into salesman values(1151,'Naddem','Delhi','5%');
+
+insert into customer values(2222,'a','Banglore',4,1111);
+insert into customer values(2232,'b','Banglore',3,1121);
+insert into customer values(2242,'c','Chennai',2,1131);
+insert into customer values(2252,'d','Delhi',5,1121);
+insert into customer values(2262,'e','Hyderabad',6,1111);
+insert into customer values(2272,'f','CBA',1,1141);
+insert into customer values(2282,'g','CBA',4,1141);
+insert into customer values(2292,'h','CBA',7,1141);
+
+
+
+insert into orders values(55555,20000,'2024-04-04',2232,1111);
+insert into orders values(55565,10000,'2024-03-02',2242,1131);
+insert into orders values(55575,1000,'2024-01-04',2222,1141);
+insert into orders values(55585,34500,'2024-05-01',2252,1151);
+insert into orders values(55595,13240,'2024-01-07',2262,1121);
+insert into orders values(55545,2000,'2023-04-04',2272,1131);
+
+
+select grade ,count(customer_id) from customer where 
+grade > (select avg(grade) from customer where city='Banglore')
+group by grade;
+
+
+
+select s.salesman_id,s.name from salesman as s
+join customer c on c.salesman_id=s.salesman_id
+group by s.salesman_id
+having count(c.customer_id)>1;
+
+
+
+select s.salesman_id,s.name,s.city,s.commission from salesman  s join customer c on s.city=c.city
+     group by s.salesman_id,s.name
+     union
+     select s.salesman_id,s.name,'No Match' ,s.commission from salesman  s where s.city not in (select distinct(city) from customer)
+     group by s.salesman_id,s.name;
+
+
+select o.order_date,s.salesman_id,s.name from salesman s , orders o 
+where s.salesman_id=o.salesman_id 
+and o.purchase_amt=(select max(purchase_amt) from orders o1 where o1.order_date=o.order_date);
+
+
+delete from salesman where salesman_id=1111;
+
+
+
+
+
+
+
+
+
+
